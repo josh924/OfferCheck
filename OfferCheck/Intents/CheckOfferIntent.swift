@@ -15,9 +15,13 @@ struct CheckOfferIntent: AppIntent {
     @Parameter(title: "Save to log", default: true)
     var saveToLog: Bool
 
+    @Parameter(title: "Show result notification", default: true)
+    var notify: Bool
+
     static var parameterSummary: some ParameterSummary {
         Summary("Check \(\.$screenshot)") {
             \.$saveToLog
+            \.$notify
         }
     }
 
@@ -34,6 +38,10 @@ struct CheckOfferIntent: AppIntent {
             let context = Persistence.container.mainContext
             context.insert(OfferRecord(result: result, profileName: rules.name))
             try? context.save()
+        }
+
+        if notify {
+            await VerdictNotifier.post(result)
         }
 
         let summary = result.summary
