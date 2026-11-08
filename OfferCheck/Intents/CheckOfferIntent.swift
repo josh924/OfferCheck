@@ -1,0 +1,43 @@
+import AppIntents
+import SwiftData
+import UniformTypeIdentifiers
+
+/// The Shortcuts action. Back Tap → Take Screenshot → Check Uber Eats Offer.
+struct CheckOfferIntent: AppIntent {
+    static var title: LocalizedStringResource = "Check Uber Eats Offer"
+    static var description = IntentDescription(
+        "Reads an Uber Eats offer screenshot, checks it against your active rules, and logs it."
+    )
+    static var openAppWhenRun: Bool = false
+
+    @Parameter(title: "Screenshot", supportedContentTypes: [.image])
+    var screenshot: IntentFile
+
+    @Parameter(title: "Save to log", default: true)
+    var saveToLog: Bool
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Check \(\.$screenshot)") {
+            \.$saveToLog
+        }
+    }
+
+    @MainActor
+    func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
+        let data = screenshot.data
+        let rules = RulesStore.loadActive()
+
+        let result = try await Task.detached(priority: .userInitiated) {
+            try OfferChecker.check(imageData: data, rules: rules)
+        }.value
+
+        if saveToLog {
+            let context = Persistence.container.mainContext
+            context.insert(OfferRecord(result: result, profileName: rules.name))
+            try? context.save()
+        }
+
+        let summary = result.summary
+        return .result(value: summary, dialog: "\(summary)")
+    }
+}
