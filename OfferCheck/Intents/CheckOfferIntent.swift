@@ -1,6 +1,5 @@
 import AppIntents
 import SwiftData
-import UniformTypeIdentifiers
 
 /// The Shortcuts action. Back Tap → Take Screenshot → Check Uber Eats Offer.
 struct CheckOfferIntent: AppIntent {
@@ -10,7 +9,7 @@ struct CheckOfferIntent: AppIntent {
     )
     static var openAppWhenRun: Bool = false
 
-    @Parameter(title: "Screenshot", supportedContentTypes: [.image])
+    @Parameter(title: "Screenshot", supportedTypeIdentifiers: ["public.image"])
     var screenshot: IntentFile
 
     @Parameter(title: "Save to log", default: true)
