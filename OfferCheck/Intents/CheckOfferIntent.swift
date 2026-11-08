@@ -26,7 +26,7 @@ struct CheckOfferIntent: AppIntent {
     }
 
     @MainActor
-    func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
+    func perform() async throws -> some IntentResult & ReturnsValue<String> {
         let data = screenshot.data
         let rules = RulesStore.loadActive()
 
@@ -45,7 +45,8 @@ struct CheckOfferIntent: AppIntent {
         }
 
         let summary = result.summary
-        // Only one banner: the vibrating notification, or the Shortcuts banner if notifications are off.
-        return .result(value: summary, dialog: notify ? "" : "\(summary)")
+        // No Shortcuts dialog: the notification above is the one banner.
+        // The summary is still returned for anyone who wants to use it in a Shortcut.
+        return .result(value: summary)
     }
 }
