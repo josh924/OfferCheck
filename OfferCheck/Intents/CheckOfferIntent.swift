@@ -45,6 +45,7 @@ struct CheckOfferIntent: AppIntent {
         }
 
         let summary = result.summary
-        return .result(value: summary, dialog: "\(summary)")
+        // Only one banner: the vibrating notification, or the Shortcuts banner if notifications are off.
+        return .result(value: summary, dialog: notify ? "" : "\(summary)")
     }
 }
